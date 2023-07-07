@@ -27,5 +27,5 @@ jobs:
         run: |
           
           docker login --username $username --password $password ghcr.io
-          docker build . --tag ghcr.io/riyaknol11/github-gke-deployment:latest
-          docker push ghcr.io/riyaknol11/github-gke-deployment:latest
+          docker build . --tag ghcr.io/riyaknol11/github-gke-deployment-ghcr:latest
+          docker push ghcr.io/riyaknol11/github-gke-deployment-ghcr:latest
