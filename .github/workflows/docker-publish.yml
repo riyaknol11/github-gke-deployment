@@ -26,6 +26,9 @@ jobs:
         uses: actions/checkout@v2
       - name: Setup Docker buildx
         uses: docker/setup-buildx-action@v2
+        with:
+          name: demo2-0.0.1-SNAPSHOT.jar
+          path: target/
       - name: Build and Push Image
         env:
           username: ${{ secrets.USERNAME }}
