@@ -21,7 +21,6 @@ jobs:
           name: hello-gcp-0.0.1-SNAPSHOT.jar
           path: target/
       - name: Build and Push Image
-
         env:
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
