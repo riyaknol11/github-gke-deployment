@@ -2,8 +2,9 @@ name: Deploy to GKE
 
 on:
   push:
-    branches:
-      - main
+    branches: [master]
+  pull_request:
+    branches: [master]
 
 env:
   IMAGE_NAME: ghcr.io/riyaknol11/github-gke-deployment:latest
