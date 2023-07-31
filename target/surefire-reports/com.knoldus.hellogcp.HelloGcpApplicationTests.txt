@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: com.knoldus.hellogcp.HelloGcpApplicationTests
--------------------------------------------------------------------------------
-Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 6.279 s - in com.knoldus.hellogcp.HelloGcpApplicationTests
