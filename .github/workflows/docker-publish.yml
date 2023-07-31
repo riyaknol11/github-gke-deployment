@@ -1,35 +1,67 @@
-name: Docker Image Publish
+name: Deploy to GKE
+
 on:
   push:
-    branches: [master]
-  pull_request:
-    branches: ["main"]
+    branches:
+      - main
+
 env:
-  REGISTRY: ghcr.io
+  IMAGE_NAME: ghcr.io/riyaknol11/github-gke-deployment:latest
+  PROJECT_ID: ${{ secrets.PROJECT_ID }}
+  GKE_CLUSTER: ${{ secrets.CLUSTER_NAME }}
+  GKE_ZONE: us-central1-c
+
 jobs:
-  build:
+  setup-build-deploy:
+    name: Setup, Build, and Deploy
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
     steps:
-      - name: checkout
-        uses: actions/checkout@v2
-      - name: Setup Docker buildx
-        uses: docker/setup-buildx-action@v2
+      - uses: actions/checkout@v2
+      - name: Set up JDK 19
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: 19
+      - run: mvn clean install --batch-mode --errors --fail-at-end
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v2
         with:
           name: hello-gcp-0.0.1-SNAPSHOT.jar
           path: target/
-      - name: Build and Push Image
+  build-docker-image:
+    name: build-docker
+    needs: setup-build-deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+      - name: Retrieve saved jar
+        uses: actions/download-artifact@v2
+        with:
+          name: hello-gcp-0.0.1-SNAPSHOT.jar
+          path: target/
+
+      #      - name: Checkout code
+      #        uses: actions/checkout@v2
+
+      - name: Set up Docker Build
+        uses: docker/setup-buildx-action@v1
+
+      - name: Build and push Docker image
         env:
-          username: ${{ secrets.USERNAME }}
-          password: ${{ secrets.PASSWORD }}
+          USERNAME: ${{ secrets.USERNAME }}
+          PASSWORD: ${{ secrets.PASSWORD }}
         run: |
-          
-          docker login --username $username --password $password ghcr.io
-          docker build . --tag ghcr.io/riyaknol11/github-gke-deployment:latest
-          docker push ghcr.io/riyaknol11/github-gke-deployment:latest
-      - name: Deploy to GKE
+          echo $PASSWORD | docker login ghcr.io -u $USERNAME --password-stdin
+          docker build --tag $IMAGE_NAME .
+          docker push $IMAGE_NAME          
+
+  deploy-to-gke:
+    needs: build-docker-image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: kubectl - Google Cloud GKE cluster.
         uses: ameydev/gke-kubectl-action@master
         env:
           PROJECT_ID: ${{ secrets.PROJECT_ID }}
@@ -38,7 +70,3 @@ jobs:
           ZONE_NAME: us-central1-c
         with:
           args: apply -f k8s/
-
-
-
-
